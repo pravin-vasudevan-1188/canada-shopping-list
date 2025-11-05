@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON Object Manager &amp; Search</title>
+  <style>
+    /* Design System */
+    :root {
+      --color-white: rgba(255, 255, 255, 1);
+      --color-black: rgba(0, 0, 0, 1);
+      --color-cream-50: rgba(252, 252, 249, 1);
+      --color-cream-100: rgba(255, 255, 253, 1);
+      --color-gray-200: rgba(245, 245, 245, 1);
+      --color-gray-300: rgba(167, 169, 169, 1);
+      --color-gray-400: rgba(119, 124, 124, 1);
+      --color-slate-500: rgba(98, 108, 113, 1);
+      --color-brown-600: rgba(94, 82, 64, 1);
+      --color-charcoal-700: rgba(31, 33, 33, 1);
+      --color-charcoal-800: rgba(38, 40, 40, 1);
+      --color-slate-900: rgba(19, 52, 59, 1);
+      --color-teal-300: rgba(50, 184, 198, 1);
+      --color-teal-400: rgba(45, 166, 178, 1);
+      --color-teal-500: rgba(33, 128, 141, 1);
+      --color-teal-600: rgba(29, 116, 128, 1);
+      --color-teal-700: rgba(26, 104, 115, 1);
+      --color-red-400: rgba(255, 84, 89, 1);
+      --color-red-500: rgba(192, 21, 47, 1);
+      --color-brown-600-rgb: 94, 82, 64;
+      --color-teal-500-rgb: 33, 128, 141;
+      --color-slate-900-rgb: 19, 52, 59;
+      --color-slate-500-rgb: 98, 108, 113;
+      --color-red-500-rgb: 192, 21, 47;
+      --color-background: var(--color-cream-50);
+      --color-surface: var(--color-cream-100);
+      --color-text: var(--color-slate-900);
+      --color-text-secondary: var(--color-slate-500);
+      --color-primary: var(--color-teal-500);
+      --color-primary-hover: var(--color-teal-600);
+      --color-primary-active: var(--color-teal-700);
+      --color-secondary: rgba(var(--color-brown-600-rgb), 0.12);
+      --color-secondary-hover: rgba(var(--color-brown-600-rgb), 0.2);
+      --color-secondary-active: rgba(var(--color-brown-600-rgb), 0.25);
+      --color-border: rgba(var(--color-brown-600-rgb), 0.2);
+      --color-btn-primary-text: var(--color-cream-50);
+      --color-card-border: rgba(var(--color-brown-600-rgb), 0.12);
+      --color-error: var(--color-red-500);
+      --color-success: var(--color-teal-500);
+      --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-size-sm: 12px;
+      --font-size-base: 14px;
+      --font-size-lg: 16px;
+      --font-size-xl: 18px;
+      --font-size-2xl: 20px;
+      --font-size-3xl: 24px;
+      --font-weight-normal: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 550;
+      --font-weight-bold: 600;
+      --space-4: 4px;
+      --space-8: 8px;
+      --space-12: 12px;
+      --space-16: 16px;
+      --space-20: 20px;
+      --space-24: 24px;
+      --space-32: 32px;
+      --radius-base: 8px;
+      --radius-lg: 12px;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-gray-400-rgb: 119, 124, 124;
+        --color-teal-300-rgb: 50, 184, 198;
+        --color-gray-300-rgb: 167, 169, 169;
+        --color-gray-200-rgb: 245, 245, 245;
+        --color-background: var(--color-charcoal-700);
+        --color-surface: var(--color-charcoal-800);
+        --color-text: var(--color-gray-200);
+        --color-text-secondary: rgba(var(--color-gray-300-rgb), 0.7);
+        --color-primary: var(--color-teal-300);
+        --color-primary-hover: var(--color-teal-400);
+        --color-secondary: rgba(var(--color-gray-400-rgb), 0.15);
+        --color-secondary-hover: rgba(var(--color-gray-400-rgb), 0.25);
+        --color-secondary-active: rgba(var(--color-gray-400-rgb), 0.3);
+        --color-border: rgba(var(--color-gray-400-rgb), 0.3);
+        --color-error: var(--color-red-400);
+        --color-success: var(--color-teal-300);
+        --color-btn-primary-text: var(--color-slate-900);
+        --color-card-border: rgba(var(--color-gray-400-rgb), 0.2);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family-base);
+      font-size: var(--font-size-base);
+      color: var(--color-text);
+      background-color: var(--color-background);
+      line-height: 1.5;
+      padding: var(--space-24);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: var(--font-size-3xl);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-8);
+      color: var(--color-text);
+    }
+
+    .subtitle {
+      font-size: var(--font-size-base);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-32);
+    }
+
+    .section {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-card-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-24);
+      margin-bottom: var(--space-24);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-title {
+      font-size: var(--font-size-xl);
+      font-weight: var(--font-weight-semibold);
+      margin-bottom: var(--space-16);
+      color: var(--color-text);
+    }
+
+    .form-group {
+      margin-bottom: var(--space-16);
+    }
+
+    label {
+      display: block;
+      font-weight: var(--font-weight-medium);
+      margin-bottom: var(--space-8);
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
+    }
+
+    textarea {
+      width: 100%;
+      padding: var(--space-12);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-base);
+      font-family: monospace;
+      font-size: var(--font-size-sm);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    textarea:focus {
+      outline: 2px solid var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"] {
+      width: 100%;
+      padding: var(--space-12);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-base);
+      font-size: var(--font-size-base);
+      background-color: var(--color-surface);
+      color: var(--color-text);
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    input[type="number"]:focus {
+      outline: 2px solid var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: var(--space-16);
+      margin-bottom: var(--space-16);
+    }
+
+    .button {
+      padding: var(--space-12) var(--space-20);
+      border: none;
+      border-radius: var(--radius-base);
+      font-size: var(--font-size-base);
+      font-weight: var(--font-weight-medium);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .button-primary {
+      background-color: var(--color-primary);
+      color: var(--color-btn-primary-text);
+    }
+
+    .button-primary:hover {
+      background-color: var(--color-primary-hover);
+    }
+
+    .button-secondary {
+      background-color: var(--color-secondary);
+      color: var(--color-text);
+    }
+
+    .button-secondary:hover {
+      background-color: var(--color-secondary-hover);
+    }
+
+    .button-group {
+      display: flex;
+      gap: var(--space-12);
+      flex-wrap: wrap;
+    }
+
+    .message {
+      padding: var(--space-12);
+      border-radius: var(--radius-base);
+      margin-bottom: var(--space-16);
+      font-size: var(--font-size-sm);
+    }
+
+    .message-error {
+      background-color: rgba(var(--color-red-500-rgb), 0.1);
+      color: var(--color-error);
+      border: 1px solid rgba(var(--color-red-500-rgb), 0.3);
+    }
+
+    .message-success {
+      background-color: rgba(var(--color-teal-500-rgb), 0.1);
+      color: var(--color-success);
+      border: 1px solid rgba(var(--color-teal-500-rgb), 0.3);
+    }
+
+    .message-info {
+      background-color: rgba(var(--color-slate-500-rgb), 0.1);
+      color: var(--color-text-secondary);
+      border: 1px solid rgba(var(--color-slate-500-rgb), 0.3);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .stats {
+      display: flex;
+      gap: var(--space-24);
+      margin-bottom: var(--space-16);
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      background-color: var(--color-secondary);
+      padding: var(--space-12) var(--space-16);
+      border-radius: var(--radius-base);
+      font-size: var(--font-size-sm);
+    }
+
+    .stat-label {
+      color: var(--color-text-secondary);
+      font-weight: var(--font-weight-normal);
+    }
+
+    .stat-value {
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text);
+      font-size: var(--font-size-lg);
+      margin-left: var(--space-8);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--radius-base);
+      border: 1px solid var(--color-border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--color-surface);
+    }
+
+    thead {
+      background-color: var(--color-secondary);
+    }
+
+    th {
+      padding: var(--space-12) var(--space-16);
+      text-align: left;
+      font-weight: var(--font-weight-semibold);
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    td {
+      padding: var(--space-12) var(--space-16);
+      border-bottom: 1px solid var(--color-border);
+      font-size: var(--font-size-sm);
+      color: var(--color-text);
+    }
+
+    tbody tr:hover {
+      background-color: var(--color-secondary);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: var(--space-32);
+      color: var(--color-text-secondary);
+      font-size: var(--font-size-base);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: var(--space-16);
+      }
+
+      .section {
+        padding: var(--space-16);
+      }
+
+      .table-container {
+        font-size: var(--font-size-sm);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>JSON Object Manager &amp; Search</h1>
+    <p class="subtitle">Manage and search through your JSON data with ease</p>
+
+    <!-- Form Section -->
+    <div class="section">
+      <h2 class="section-title">Add New Item</h2>
+      <form id="itemForm" onsubmit="addItem(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="itemInput">Item *</label>
+            <input type="text" id="itemInput" required placeholder="e.g., okra">
+          </div>
+          <div class="form-group">
+            <label for="dateInput">Purchase Date *</label>
+            <input type="date" id="dateInput" required>
+          </div>
+          <div class="form-group">
+            <label for="quantityInput">Unit Quantity (lbs) *</label>
+            <input type="number" id="quantityInput" step="0.01" min="0" required placeholder="e.g., 1">
+          </div>
+          <div class="form-group">
+            <label for="priceInput">Price Per Pound *</label>
+            <input type="text" id="priceInput" required placeholder="e.g., $4.99">
+          </div>
+          <div class="form-group">
+            <label for="shopInput">Shop Name *</label>
+            <input type="text" id="shopInput" required placeholder="e.g., Panchavati">
+          </div>
+        </div>
+        <div id="inputMessage"></div>
+        <div class="button-group">
+          <button type="submit" class="button button-primary">Add Item</button>
+          <button type="button" class="button button-secondary" onclick="clearForm()">Clear Form</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Data Management Section -->
+    <div class="section">
+      <h2 class="section-title">Data Management</h2>
+      <div class="button-group">
+        <button class="button button-primary" onclick="exportData()">Export Data</button>
+        <button class="button button-secondary" onclick="document.getElementById('importFile').click()">Import Data</button>
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+        <button class="button button-secondary" onclick="clearAllData()">Clear All Data</button>
+      </div>
+      <div id="dataMessage"></div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="section">
+      <h2 class="section-title">Search</h2>
+      <div class="form-group">
+        <label for="searchInput">Search across all fields:</label>
+        <input type="text" id="searchInput" placeholder="Type to search..." oninput="performSearch()">
+      </div>
+      <div class="button-group">
+        <button class="button button-primary" onclick="performSearch()">Search</button>
+        <button class="button button-secondary" onclick="clearSearch()">Clear Search</button>
+      </div>
+    </div>
+
+    <!-- Display Section -->
+    <div class="section">
+      <h2 class="section-title">Data Display</h2>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-label">Total Items:</span>
+          <span class="stat-value" id="totalCount">0</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Showing:</span>
+          <span class="stat-value" id="filteredCount">0</span>
+        </div>
+      </div>
+      <div id="displayMessage"></div>
+      <div class="table-container">
+        <table id="dataTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // In-memory data storage
+    let dataStore = [];
+    let filteredData = [];
+
+    // Initialize with sample data
+    function initializeApp() {
+      const sampleData = [
+        {
+          "item": "okra",
+          "purchaseDate": "11/05/2025",
+          "unitQuantityInPounds": "1",
+          "pricePerPound": "$4.99",
+          "shopname": "Panchavati"
+        }
+      ];
+      dataStore = [...sampleData];
+      filteredData = [...dataStore];
+      updateDisplay();
+    }
+
+    // Add item from form
+    function addItem(event) {
+      event.preventDefault();
+      const messageDiv = document.getElementById('inputMessage');
+      
+      const newItem = {
+        item: document.getElementById('itemInput').value.trim(),
+        purchaseDate: formatDate(document.getElementById('dateInput').value),
+        unitQuantityInPounds: document.getElementById('quantityInput').value,
+        pricePerPound: document.getElementById('priceInput').value.trim(),
+        shopname: document.getElementById('shopInput').value.trim()
+      };
+
+      // Add to data store
+      dataStore.push(newItem);
+      filteredData = [...dataStore];
+      
+      // Clear form and search
+      document.getElementById('itemForm').reset();
+      document.getElementById('searchInput').value = '';
+      
+      showMessage(messageDiv, 'Item added successfully!', 'success');
+      updateDisplay();
+    }
+
+    // Clear form
+    function clearForm() {
+      document.getElementById('itemForm').reset();
+      document.getElementById('inputMessage').innerHTML = '';
+    }
+
+    // Format date from YYYY-MM-DD to MM/DD/YYYY
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
+    }
+
+    // Export data to JSON file
+    function exportData() {
+      const messageDiv = document.getElementById('dataMessage');
+      
+      if (dataStore.length === 0) {
+        showMessage(messageDiv, 'No data to export', 'error');
+        return;
+      }
+
+      const dataStr = JSON.stringify(dataStore, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'items.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      showMessage(messageDiv, `Exported ${dataStore.length} item(s) to items.json`, 'success');
+    }
+
+    // Import data from JSON file
+    function importData(event) {
+      const messageDiv = document.getElementById('dataMessage');
+      const file = event.target.files[0];
+      
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          
+          if (!Array.isArray(imported)) {
+            showMessage(messageDiv, 'Imported file must contain a JSON array', 'error');
+            return;
+          }
+
+          if (imported.length === 0) {
+            showMessage(messageDiv, 'Imported file contains no items', 'error');
+            return;
+          }
+
+          // Add imported items to data store
+          dataStore = [...dataStore, ...imported];
+          filteredData = [...dataStore];
+          
+          showMessage(messageDiv, `Successfully imported ${imported.length} item(s)`, 'success');
+          updateDisplay();
+        } catch (error) {
+          showMessage(messageDiv, `Error importing file: ${error.message}`, 'error');
+        }
+      };
+      
+      reader.onerror = function() {
+        showMessage(messageDiv, 'Error reading file', 'error');
+      };
+      
+      reader.readAsText(file);
+      
+      // Reset file input
+      event.target.value = '';
+    }
+
+    // Perform search
+    function performSearch() {
+      const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+      
+      if (!searchTerm) {
+        filteredData = [...dataStore];
+        updateDisplay();
+        return;
+      }
+
+      filteredData = dataStore.filter(item => {
+        return Object.values(item).some(value => {
+          if (value === null || value === undefined) return false;
+          return String(value).toLowerCase().includes(searchTerm);
+        });
+      });
+
+      updateDisplay();
+    }
+
+    // Clear search
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      filteredData = [...dataStore];
+      updateDisplay();
+    }
+
+    // Clear all data
+    function clearAllData() {
+      if (dataStore.length === 0) {
+        return;
+      }
+      
+      if (confirm('Are you sure you want to clear all data?')) {
+        dataStore = [];
+        filteredData = [];
+        document.getElementById('jsonInput').value = '';
+        document.getElementById('searchInput').value = '';
+        document.getElementById('inputMessage').innerHTML = '';
+        updateDisplay();
+      }
+    }
+
+    // Update display
+    function updateDisplay() {
+      // Update counts
+      document.getElementById('totalCount').textContent = dataStore.length;
+      document.getElementById('filteredCount').textContent = filteredData.length;
+
+      const tableHead = document.getElementById('tableHead');
+      const tableBody = document.getElementById('tableBody');
+      const displayMessage = document.getElementById('displayMessage');
+
+      // Clear previous content
+      tableHead.innerHTML = '';
+      tableBody.innerHTML = '';
+      displayMessage.innerHTML = '';
+
+      if (dataStore.length === 0) {
+        showMessage(displayMessage, 'No data available. Add some JSON data to get started.', 'info');
+        return;
+      }
+
+      if (filteredData.length === 0) {
+        showMessage(displayMessage, 'No results found for your search.', 'info');
+        // Still show headers
+        const headers = Object.keys(dataStore[0]);
+        const headerRow = document.createElement('tr');
+        headers.forEach(header => {
+          const th = document.createElement('th');
+          th.textContent = formatHeader(header);
+          headerRow.appendChild(th);
+        });
+        tableHead.appendChild(headerRow);
+        return;
+      }
+
+      // Get all unique keys from all objects
+      const allKeys = new Set();
+      filteredData.forEach(item => {
+        Object.keys(item).forEach(key => allKeys.add(key));
+      });
+      const headers = Array.from(allKeys);
+
+      // Create table headers
+      const headerRow = document.createElement('tr');
+      headers.forEach(header => {
+        const th = document.createElement('th');
+        th.textContent = formatHeader(header);
+        headerRow.appendChild(th);
+      });
+      tableHead.appendChild(headerRow);
+
+      // Create table rows
+      filteredData.forEach(item => {
+        const row = document.createElement('tr');
+        headers.forEach(header => {
+          const td = document.createElement('td');
+          td.textContent = item[header] !== undefined ? item[header] : '-';
+          row.appendChild(td);
+        });
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Format header text
+    function formatHeader(header) {
+      return header
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, str => str.toUpperCase())
+        .trim();
+    }
+
+    // Show message
+    function showMessage(element, text, type) {
+      element.innerHTML = `<div class="message message-${type}">${text}</div>`;
+      if (type !== 'info') {
+        setTimeout(() => {
+          element.innerHTML = '';
+        }, 5000);
+      }
+    }
+
+    // Initialize on page load
+    window.onload = initializeApp;
+  </script>
+</body>
+</html>
